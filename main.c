@@ -7,17 +7,20 @@
 //
 
 #include <stdio.h>
-#include "Load_Program.h"
-#include "config.h"
+#include "components.h"
+#include "instructions.h"
 
 int main(int argc, const char * argv[]) {
     
-    extern unsigned int memory[MEMORY_SIZE];
+    extern unsigned int memory[MEMORY_SIZE]; // must use extern to referece symbol declared in components
     
-    Initialize_Simulation_Memory();
+    initialize_simulation_memory(); // Must happen before initializing components
+    initialize_components();
     
     for(int i=0; i<MEMORY_SIZE; i++){
-        printf("Memory-%u : 0x%08x\n",i,memory[i]);
+        printf("Memory-%u : 0x%08x | ",i,memory[i]);
+        InstructionFormat(memory[i]);
+        printf("\n");
     }
 
     return 0;

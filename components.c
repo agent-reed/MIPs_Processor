@@ -1,14 +1,34 @@
 //
-//  Load_Program.c
+//  components.c
 //  MIPs_Processor
 //
-//  Created by Andrew Gentry on 4/6/17.
+//  Created by Andrew Gentry on 4/8/17.
 //  Copyright © 2017 agentreed. All rights reserved.
 //
 
 #include <stdio.h>
-#include "config.h"
 #include "components.h"
+
+// Memory Declarations
+unsigned int reg_file[REGISTER_COUNT];
+unsigned int memory[MEMORY_SIZE];
+unsigned int imemory[IMEMORY_SIZE];
+unsigned int dmemory[DMEMORY_SIZE];
+
+unsigned int PC;
+
+IFID_Register ifid_reg;
+IFID_Register ifid_shadow;
+
+IDEX_Register idex_reg;
+IDEX_Register idex_shadow;
+
+EXMEM_Register exmem_reg;
+EXMEM_Register exmem_shadow;
+
+MEMWB_Register memwb_reg;
+MEMWB_Register memwb_shadow;
+
 
 unsigned int program_image[MEMORY_SIZE] = {4000,4000,0,0,0,50,0,0,0,0,
     0x00001025,     // 	move	v0,zero    <load_arrays>:
@@ -264,11 +284,16 @@ unsigned int program_image[MEMORY_SIZE] = {4000,4000,0,0,0,50,0,0,0,0,
  0x00000000};    // nop
  */
 
+void initialize_components(void) {
+    reg_file[SP] = memory[0];
+    reg_file[FP] = memory[1];
+    PC = memory[5];
+    printf("~~~~ Initializing Components | Stack Pointer: [0x%08x]\tFrame Pointer: [0x%08x] PC: [0x%08x]\n\n", reg_file[SP], reg_file[FP], PC);
+}
 
-void Initialize_Simulation_Memory(void){
+void initialize_simulation_memory(void){
     
     for (int i=0; i < MEMORY_SIZE; i++){
         memory[i] = program_image[i];
     }
 }
-
