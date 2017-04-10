@@ -19,6 +19,11 @@
 #define SP					29
 #define FP					30
 
+// Memory Declarations
+unsigned int reg_file[REGISTER_COUNT];
+unsigned int memory[MEMORY_SIZE];
+unsigned int imemory[IMEMORY_SIZE];
+unsigned int dmemory[DMEMORY_SIZE];
 
 //Type Definitions
 typedef enum {ALUOP_LWSW = 0, ALUOP_BEQ, ALUOP_R, ALUOP_NOP} alu_op;
@@ -83,6 +88,22 @@ typedef struct {
     unsigned short rd;
     
 } MEMWB_Register;
+
+
+unsigned int PC;
+
+
+IFID_Register ifid_reg;
+IFID_Register ifid_shadow;
+
+IDEX_Register idex_reg;
+IDEX_Register idex_shadow;
+
+EXMEM_Register exmem_reg;
+EXMEM_Register exmem_shadow;
+
+MEMWB_Register memwb_reg;
+MEMWB_Register memwb_shadow;
 
 void initialize_components(void);
 void initialize_simulation_memory(void);

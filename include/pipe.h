@@ -8,6 +8,7 @@
 
 #ifndef pipe_h
 #define pipe_h
+#include "components.h"
 
 void IF_op(void);
 void ID_op(void);

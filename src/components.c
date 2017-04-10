@@ -4,31 +4,10 @@
 //
 //  Created by Andrew Gentry on 4/8/17.
 //  Copyright © 2017 agentreed. All rights reserved.
-//
+// make change
 
 #include <stdio.h>
 #include "components.h"
-
-// Memory Declarations
-unsigned int reg_file[REGISTER_COUNT];
-unsigned int memory[MEMORY_SIZE];
-unsigned int imemory[IMEMORY_SIZE];
-unsigned int dmemory[DMEMORY_SIZE];
-
-unsigned int PC;
-
-IFID_Register ifid_reg;
-IFID_Register ifid_shadow;
-
-IDEX_Register idex_reg;
-IDEX_Register idex_shadow;
-
-EXMEM_Register exmem_reg;
-EXMEM_Register exmem_shadow;
-
-MEMWB_Register memwb_reg;
-MEMWB_Register memwb_shadow;
-
 
 unsigned int program_image[MEMORY_SIZE] = {4000,4000,0,0,0,50,0,0,0,0,
     0x00001025,     // 	move	v0,zero    <load_arrays>:
