@@ -12,6 +12,15 @@
 void IF_op(void){
 	// Places result into IFID_shadow
 	printf("Executing IF_op\n");
+	if (ifid_shadow.pcWrite) {
+		printf("pcWrite True\n");
+		// Set the PC to what it needs to be 
+	}
+	else {
+		PC++;
+	}
+
+	ifid_shadow.instruction = memory[PC];
 }
 void ID_op(void){
 	// Places result into IDEX_shadow

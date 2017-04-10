@@ -32,7 +32,7 @@ typedef enum {false = 0, true = 1} bool;
 
 // Register Definitions
 typedef struct {
-    bool PCWrite;
+    bool pcWrite;
     unsigned int nextPC;
     unsigned int instruction;
     

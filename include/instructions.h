@@ -55,17 +55,25 @@
 #define J_R					0x08
 
 // Useful Masks
-#define OP_MASK				0xfc000000
-#define RS_MASK				0x03e00000
-#define RT_MASK				0x001f0000
-#define RD_MASK				0x0000f800
-#define SH_MASK				0x000007c0
-#define FN_MASK				0x0000003f
+#define OP_MASK				0xFC000000
+#define RS_MASK				0x3E00000
+#define RT_MASK				0x1F0000
+#define RD_MASK				0xF800
+#define SHAMT_MASK			0x7C0
+#define FUNCT_MASK			0x3F
+#define IMM_MASK			0xFFFF
 
-// Type Definitions
-typedef enum {R_FORMAT = 0, I_FORMAT, J_FORMAT} ins_format;
+#define OP_SHIFT            0x1A
+#define RS_SHIFT            0x15
+#define RT_SHIFT            0x10
+#define RD_SHIFT            0xB
+#define SHAMT_SHIFT         0x6
+
 typedef enum {OP = 0, RS, RT, RD, SHAMT, FUNCT, IMM} ins_element;
+typedef enum {R_FORMAT = 0, I_FORMAT, J_FORMAT} ins_format;
 
-ins_format InstructionFormat(int ins);
+unsigned int InstructionElement(int instruction, ins_element element);
+ins_format InstructionFormat(int instruction);
+
 
 #endif /* tools_h */
