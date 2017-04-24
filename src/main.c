@@ -7,19 +7,22 @@
 // make change
 
 #include <stdio.h>
-#include "instructions.h"
 #include "pipe.h"
+
 
 int main(int argc, const char * argv[]) {
     
     initialize_simulation_memory(); // Must happen before initializing components
     initialize_components();
-    step();
 
-    for(int i=0; i<MEMORY_SIZE; i++){
-        printf("Memory-%u : 0x%08x | ",i,memory[i]);
-        InstructionFormat(memory[i]);
+    int i = 0;
+    while(i <10) {
+    	step();
+    	i++;
     }
+
+
+    //print_memoryTrace();
 
     return 0;
 }

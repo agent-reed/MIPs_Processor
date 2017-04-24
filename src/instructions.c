@@ -5,7 +5,7 @@
 //  Created by Andrew Gentry on 4/8/17.
 //  Copyright © 2017 agentreed. All rights reserved.
 // make change
-
+#include <stdio.h>
 #include "instructions.h"
 
 unsigned int InstructionElement(int instruction, ins_element element) {

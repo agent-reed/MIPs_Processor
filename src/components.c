@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "components.h"
 
-unsigned int program_image[MEMORY_SIZE] = {4000,4000,0,0,0,50,0,0,0,0,
+unsigned int program_image[MEMORY_SIZE] = {4000,4000,0,0,0,49,0,0,0,0,
     0x00001025,     // 	move	v0,zero    <load_arrays>:
     0x24060064,     // 	li	a2,100
     0x8c830000,     // 	lw	v1,0(a0)
@@ -266,8 +266,8 @@ unsigned int program_image[MEMORY_SIZE] = {4000,4000,0,0,0,50,0,0,0,0,
 void initialize_components(void) {
     reg_file[SP] = memory[0];
     reg_file[FP] = memory[1];
-    PC = memory[5];
-    printf("~~~~ Initializing Components | Stack Pointer: [0x%08x]\tFrame Pointer: [0x%08x] PC: [0x%08x]\n\n", reg_file[SP], reg_file[FP], PC);
+    PC_zero = memory[5];
+    printf("INFO: Initializing Components | Stack Pointer: [0x%08x]\tFrame Pointer: [0x%08x] PC: [0x%08x]\n\n", reg_file[SP], reg_file[FP], PC);
 }
 
 void initialize_simulation_memory(void){

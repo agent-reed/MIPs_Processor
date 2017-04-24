@@ -19,6 +19,10 @@
 #define SP					29
 #define FP					30
 
+unsigned int PC;
+unsigned int PC_zero;
+unsigned int PC_one;
+
 // Memory Declarations
 unsigned int reg_file[REGISTER_COUNT];
 unsigned int memory[MEMORY_SIZE];
@@ -28,8 +32,10 @@ unsigned int dmemory[DMEMORY_SIZE];
 //Type Definitions
 typedef enum {ALUOP_LWSW = 0, ALUOP_BEQ, ALUOP_R, ALUOP_NOP} alu_op;
 typedef enum {STAGE_IF=0x0, STAGE_ID, STAGE_EX, STAGE_MEM, STAGE_WB} stage;
+typedef enum {IFID = 0, IDEX, EXMEM, MEMWB} pipeline_reg;
 typedef enum {false = 0, true = 1} bool;
 
+bool PC_branch;
 // Register Definitions
 typedef struct {
     bool pcWrite;
@@ -42,19 +48,21 @@ typedef struct {
     // WriteBack
     bool MemtoReg;
     bool RegWrite;
+
     // Memory
-    bool Branch; // present in 4.51
+    bool Branch;
     bool MemRead;
     bool MemWrite;
+
     // Execution
     bool ALUSrc;
     bool RegDst;
     alu_op ALUOp;
     unsigned opCode;
     
-    unsigned int regValue1;
-    unsigned int regValue2;
-    unsigned int extendedValue;
+    unsigned int read_reg1;
+    unsigned int read_reg2;
+    unsigned int signextended;
     
     unsigned short rs;
     unsigned short rt;
@@ -67,7 +75,7 @@ typedef struct {
     bool MemtoReg;
     bool RegWrite;
     // Memory
-    bool Branch; // present in 4.51
+    bool Branch;
     bool MemRead;
     bool MemWrite;
     
@@ -88,9 +96,6 @@ typedef struct {
     unsigned short rd;
     
 } MEMWB_Register;
-
-
-unsigned int PC;
 
 
 IFID_Register ifid_reg;

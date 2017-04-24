@@ -9,6 +9,9 @@
 #ifndef pipe_h
 #define pipe_h
 #include "components.h"
+#include "instructions.h"
+
+//bool PC_branch = false;
 
 void IF_op(void);
 void ID_op(void);
@@ -20,7 +23,7 @@ void step(void);
 void move_shadows_to_reg(void);
 
 void ALU_UnitOperation(unsigned int src1, unsigned int src2);
-void CTL_UnitOperation(unsigned int opCode, unsigned int regVal1, unsigned int regVal2, unsigned int extendedValue);
+void CTL_UnitOperation(unsigned int opCode, int regVal1, int regVal2, unsigned int extendedValue);
 
 
 void initialize_pipeline();

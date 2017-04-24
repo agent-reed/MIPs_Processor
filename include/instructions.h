@@ -9,8 +9,6 @@
 #ifndef instructions_h
 #define instructions_h
 
-#include <stdio.h>
-
 // R Formats
 #define R_ADD 				0x20
 #define R_ADDU 				0x21
@@ -68,6 +66,7 @@
 #define RT_SHIFT            0x10
 #define RD_SHIFT            0xB
 #define SHAMT_SHIFT         0x6
+// Dont need a funct shift because that's 0.  ;)
 
 typedef enum {OP = 0, RS, RT, RD, SHAMT, FUNCT, IMM} ins_element;
 typedef enum {R_FORMAT = 0, I_FORMAT, J_FORMAT} ins_format;
