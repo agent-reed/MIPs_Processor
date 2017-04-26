@@ -11,8 +11,6 @@
 #include "components.h"
 #include "instructions.h"
 
-//bool PC_branch = false;
-
 void IF_op(void);
 void ID_op(void);
 void EX_op(void);
