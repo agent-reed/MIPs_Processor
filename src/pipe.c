@@ -11,7 +11,7 @@
 #include "tools.h"
 
 void IF_op(void){
-	printf(">>>>>>> IF\n");
+	//printf(">>>>>>> IF\n");
 	// if (PC_branch) {
 	// 	PC = PC_one;
 	// 	PC_branch = !PC_branch;
@@ -23,17 +23,19 @@ void IF_op(void){
 	PC_zero = PC+1;
 	ifid_shadow.instruction = memory[PC_zero];
 	ifid_shadow.nextPC = PC_zero;
+
+	return;
 }
 void ID_op(void){
-	printf(">>>>>>> ID\n");
+	//printf(">>>>>>> ID\n");
 	int instruction = ifid_reg.instruction;
 	unsigned int rs = InstructionElement(instruction, RS);
 	unsigned int rd = InstructionElement(instruction, RD);
 	unsigned int rt = InstructionElement(instruction, RT);
 	unsigned int op = InstructionElement(instruction, OP);
 	int extendedValue = InstructionElement(instruction, IMM);
-	int regVal1;
-	int regVal2;
+	int read1;
+	int read2;
 
 	idex_shadow.rs = rs;
 	idex_shadow.rd = rd;
@@ -44,36 +46,63 @@ void ID_op(void){
 	idex_shadow.read_reg1 = (int)reg_file[rs];
 	idex_shadow.read_reg2 = (int)reg_file[rt];
 
-	regVal1 = (int)reg_file[rs];
-  	regVal2 = (int)reg_file[rt];
+	read1 = (int)reg_file[rs];
+  	read2 = (int)reg_file[rt];
 
-	CTL_UnitOperation(op, regVal1, regVal2, extendedValue);
+  	//TODO: Do ID forwarding here
 
+	CTL_Perform(op, read1, read2, extendedValue);
+
+	return;
 }
+
 void EX_op(void){
-	// Places result into EXMEM_shadow
-	printf(">>>>>>> EX\n");
+	//printf(">>>>>>> EX\n");
+
+	int val1 = idex_reg.read_reg1;
+	int val2 = idex_reg.read_reg2;
+
+	//TODO: forward EX here
+
+	//Continue to pass on control to next pipeline registers
+	exmem_shadow.RegWrite = idex_reg.RegWrite;
+	exmem_shadow.MemtoReg = idex_reg.MemtoReg;
+	exmem_shadow.Branch = idex_reg.Branch;
+	exmem_shadow.MemRead = idex_reg.MemRead;
+	exmem_shadow.MemWrite = idex_reg.MemWrite;
+
+	if (idex_reg.RegDst) {
+		exmem_shadow.rd = idex_reg.rd;
+	}
+
+	else {
+		exmem_shadow.rd = idex_reg.rt;
+	}
+
+	ALU_Perform(val1, val2, idex_reg.ALUOp);
+
+	return;
 }
 void MEM_op(void){
 	// Places result into MEMWB_shadow
 	// And probably also stuff into memory[]
-	printf(">>>>>>> MEM\n");
+	//printf(">>>>>>> MEM\n");
 }
 void WB_op(void){
     // Places result into IDEX_shadow (I think?)
-    printf(">>>>>>> WB\n");
+    //printf(">>>>>>> WB\n");
 }
 
 void move_shadows_to_reg(void){
 	// set each Stage_reg to be respective Stage_shadow	
-	printf(">>>>>>> Shadows 2 Reg\n");
+	//printf(">>>>>>> Shadows 2 Reg\n");
 	ifid_reg = ifid_shadow;
 	idex_reg = idex_shadow;
 	exmem_reg = exmem_shadow;
 	memwb_reg = memwb_shadow;
 }
 
-void CTL_UnitOperation(unsigned int opCode, int regVal1, int regVal2, unsigned int extendedValue) {
+void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int extendedValue) {
 	unsigned int jImm;
 	unsigned int msb;
 	idex_shadow.ALUOp = ALUOP_NOP;
@@ -247,15 +276,112 @@ void CTL_UnitOperation(unsigned int opCode, int regVal1, int regVal2, unsigned i
 	}
 }
 
+void ALU_Perform(int val1, int val2, alu_op operation) {
+	int result = 0;
+	int zero = 0;
+	unsigned int shamt;
+
+	printf("\nALU OPERATION: ~~~~~");
+	shamt = InstructionElement(idex_reg.signextended, SHAMT);
+	if(idex_reg.ALUOp == ALUOP_LWSW) {
+		result = val1 + val2;
+		printf("Executing LWSW. Res: (%d) \n", result);
+	}
+	else if(idex_reg.ALUOp == ALUOP_R) {
+		if(idex_reg.opCode) {
+			printf(" I with op: (0x%x)\n", idex_reg.opCode);
+			switch(idex_reg.opCode) {
+					case I_ADDI:
+						result = (int)val1 + (int)val2;
+						break;
+					case I_ADDIU:
+						result = val1 + val2;
+						break;
+					case I_ANDI:
+						result = val1 & (int)(val2&IMM_MASK);
+						break;
+					case I_ORI:
+						result = val1 | (int)(val2&IMM_MASK);
+						break;
+					case I_SLTI:
+						if (val1<val2) result = 1;
+						else result = 0;
+						break;
+					case I_SLTIU:
+						if (val1<val2) result = 0;
+						else result = 1;
+						break;
+					default:
+						printf("Did not recognize the op code for EX...");
+			}
+		}
+		else {
+			// R
+			unsigned int func = InstructionElement(idex_reg.signextended, FUNCT);
+			printf(" R with func: (0x%x)\n", func);
+			switch (func) {
+				case R_ADD:
+					result = val1 + val2;
+					break;
+				case R_ADDU:
+					result = val1 + val2;
+					break;
+				case R_SUB:
+					result = val1 - val2;
+					break;
+				case R_AND:
+					result = val1 & val2;
+					break;
+					// OR and MOV
+				case R_OR:
+					result = val1 | val2;
+					break;
+				case R_XOR:
+					result = val1^val2;
+				case R_SLT:
+					if (val1<val2) result = 1;
+					else result = 0;
+					break;
+				case R_SLTU:
+					if (val1<val2) result = 1;
+					else result = 0;
+					break;
+				case R_SLL:
+					result = val1<<shamt;
+					break;
+				case R_SRA:
+					result = val1>>shamt;
+					break;
+				case R_SRL:
+					result = val1>>shamt;
+					break;
+				case R_NOR:
+					result = ~(val1|val2);
+					break;
+				case R_MOVN:
+					if(val2 != 0){
+						result = val1;
+					}
+					break;
+				default:
+					printf("Unknown R command... (%d)", func);
+			}
+		}
+	}
+	exmem_shadow.zero = zero;
+	exmem_shadow.alu_Result = result;
+}
+
 void step(void){
 	move_shadows_to_reg();
-	print_pipelineReg(IFID);
-	print_pipelineReg(IDEX);
 	IF_op();
 	ID_op();
 	EX_op();
 	MEM_op();
 	WB_op();
+	print_pipelineReg(IFID);
+	print_pipelineReg(IDEX);
+	print_pipelineReg(EXMEM);
 }
 
 

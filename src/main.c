@@ -17,6 +17,7 @@ int main(int argc, const char * argv[]) {
 
     int i = 0;
     while(i <10) {
+    	printf("step(%d) \n",i);
     	step();
     	i++;
     }

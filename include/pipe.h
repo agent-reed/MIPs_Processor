@@ -22,8 +22,8 @@ void WB_op(void);
 void step(void);
 void move_shadows_to_reg(void);
 
-void ALU_UnitOperation(unsigned int src1, unsigned int src2);
-void CTL_UnitOperation(unsigned int opCode, int regVal1, int regVal2, unsigned int extendedValue);
+void ALU_Perform(int src1, int src2, alu_op operation);
+void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int extendedValue);
 
 
 void initialize_pipeline();

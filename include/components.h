@@ -78,9 +78,10 @@ typedef struct {
     bool Branch;
     bool MemRead;
     bool MemWrite;
+
+    int zero;
     
-    bool zero;
-    unsigned int aluResult;
+    unsigned int alu_Result;
     unsigned int dataToMem;
     unsigned short rd;
     
@@ -92,7 +93,7 @@ typedef struct {
     bool RegWrite;
     
     unsigned int memValue;
-    unsigned int aluResult;
+    unsigned int alu_Result;
     unsigned short rd;
     
 } MEMWB_Register;
