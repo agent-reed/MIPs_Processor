@@ -11,9 +11,11 @@
 
 #define MEMORY_SIZE			4096
 
-#define DCACHE_SIZE		256
-#define ICACHE_SIZE		256
-#define BLOCK_SIZE		1
+// Cache Configuration
+#define DCACHE_SIZE			256
+#define ICACHE_SIZE			128
+#define BLOCK_SIZE			1
+#define WRITE_POLICY		1 			// 1 = Write Back,  0 = Write Through
 
 #define REGISTER_COUNT		32
 
@@ -99,12 +101,13 @@ typedef struct {
     
 } MEMWB_Register;
 
+// Cache block structure
 typedef struct {
 	bool valid;
 	bool dirty;
 	unsigned int tag;
 	unsigned int size;					// Size is in words
-	unsigned int block[BLOCK_SIZE];
+	unsigned int value[BLOCK_SIZE];
 } cache_block;
 
 // Cache Structure
@@ -135,6 +138,7 @@ MEMWB_Register memwb_shadow;
 
 void initialize_components(void);
 void initialize_cache(cache cache_in, cache_type type);
+void zeroCache(cache cache_in);
 void initialize_simulation_memory(void);
 
 #endif /* components_h */

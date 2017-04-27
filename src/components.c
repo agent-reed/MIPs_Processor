@@ -7,6 +7,7 @@
 // make change
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "components.h"
 
 unsigned int program_image[MEMORY_SIZE] = {4000,4000,0,0,0,49,0,0,0,0,
@@ -270,11 +271,37 @@ void initialize_components(void) {
     initialize_cache(ICache, INST_CACHE);
     initialize_cache(DCache, DATA_CACHE);
     
+    printf("*****************     Cache Initialized.     *****************\n\n");
+    
     printf("INFO: Initializing Components | Stack Pointer: [0x%08x]\tFrame Pointer: [0x%08x] PC: [0x%08x]\n\n", reg_file[SP], reg_file[FP], PC);
 }
 
 void initialize_cache(cache cache_in, cache_type type) {
-    
+	cache_in.misses = 0;
+	cache_in.hits = 0;
+	cache_in.block_size = BLOCK_SIZE;
+	cache_in.write_policy = WRITE_POLICY;
+	
+    if (type == INST_CACHE) {
+		cache_in.size = ICACHE_SIZE;
+		cache_in.num_blocks = ICACHE_SIZE/BLOCK_SIZE;
+		cache_in.data = calloc(ICACHE_SIZE/BLOCK_SIZE, sizeof(cache_block));
+		//zeroCache(cache_in);
+	}
+	else {
+		cache_in.size = DCACHE_SIZE;
+		cache_in.num_blocks = DCACHE_SIZE/BLOCK_SIZE;
+		cache_in.data = calloc(ICACHE_SIZE/BLOCK_SIZE, sizeof(cache_block));
+		//zeroCache(cache_in);
+	}
+}
+
+void zeroCache(cache cache_in) {
+	for (int i=0; i<cache_in.num_blocks; i++) {
+		for (int j=0; j<BLOCK_SIZE; j++) {
+			cache_in.data[i].value[j] = 0;
+		}
+	}
 }
 
 void initialize_simulation_memory(void){
@@ -283,3 +310,5 @@ void initialize_simulation_memory(void){
         memory[i] = program_image[i];
     }
 }
+
+
