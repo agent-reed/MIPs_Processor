@@ -134,6 +134,7 @@ MEMWB_Register memwb_reg;
 MEMWB_Register memwb_shadow;
 
 void initialize_components(void);
+void initialize_cache(cache cache_in, cache_type type);
 void initialize_simulation_memory(void);
 
 #endif /* components_h */

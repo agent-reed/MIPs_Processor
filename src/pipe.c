@@ -8,12 +8,13 @@
 
 #include <stdio.h>
 #include "pipe.h"
-#include "tools.h"
 
 //bool PC_branch = false;
+int writeData;
+int oldData;
 
 void IF_op(void){
-	//printf(">>>>>>> IF\n");
+	printf(">>>>>>> IF\n");
 	// if (PC_branch) {
 	// 	PC = PC_one;
 	// 	PC_branch = !PC_branch;
@@ -29,7 +30,7 @@ void IF_op(void){
 	return;
 }
 void ID_op(void){
-	//printf(">>>>>>> ID\n");
+	printf(">>>>>>> ID\n");
 	int instruction = ifid_reg.instruction;
 	unsigned int rs = InstructionElement(instruction, RS);
 	unsigned int rd = InstructionElement(instruction, RD);
@@ -68,7 +69,7 @@ void ID_op(void){
 }
 
 void EX_op(void){
-	//printf(">>>>>>> EX\n");
+	printf(">>>>>>> EX\n");
 
 	int val1 = idex_reg.read_reg1;
 	int val2 = idex_reg.read_reg2;
@@ -102,11 +103,87 @@ void EX_op(void){
 void MEM_op(void){
 	// Places result into MEMWB_shadow
 	// And probably also stuff into memory[]
-	//printf(">>>>>>> MEM\n");
+	printf(">>>>>>> MEM\n");
+
+	unsigned int addr;
+	unsigned short offset;
+  	unsigned short shamt;
+  	unsigned int data;
+
+	// MEM Operation
+	memwb_shadow.RegWrite = exmem_reg.RegWrite;
+	memwb_shadow.MemtoReg = exmem_reg.MemtoReg;
+	memwb_shadow.alu_Result = exmem_reg.alu_Result;
+	memwb_shadow.rd = exmem_reg.rd;
+
+	offset = exmem_reg.alu_Result;
+
+	addr = ((unsigned int)exmem_reg.alu_Result)>>2;
+
+	if(exmem_reg.MemWrite) {
+		printf("MemWrite true -> Write to cache?\n");
+		//Success = writeToCache(addr, (unsigned int)exmem_reg.dataToMem, offset, exmem_reg.dataLen);
+	}
+
+	//Temporary
+	memwb_shadow.memValue = memory[addr];
+	printf("address: %u\n", addr);
+	printf("Memvalue to write: 0x%x\n", memory[addr]);
+
+	// if(exmem_reg.MemRead) {
+	//  if(!readFromCache(CACHE_D, addr, &data)) {
+ //      	  cacheMissed |= DCACHE_MISSED;
+ //    	 }
+
+ //    switch(exmem_reg.dataLen) {
+ //        case DLEN_W:
+ //          memwb_shadow.memValue = data;
+ //          break;
+ //        case DLEN_B:
+ //          shamt = (3-offset)*8;
+ //          data >>= shamt;
+ //          data = data&0x80?(data|0xffffff00):data&0xff;
+ //          memwb_shadow.memValue = data;
+ //          break;
+ //        case DLEN_BU:
+ //          shamt = (3-offset)*8;
+ //          data = data&0xff;
+ //          memwb_shadow.memValue = data;
+ //          break;
+ //        case DLEN_HW:
+ //          shamt = (1-offset)*16;
+ //          data >>= shamt;
+ //          data = data&0x8000?(data|0xffff0000):data&0xffff;
+ //          memwb_shadow.memValue = data;
+ //          break;
+ //        case DLEN_HWU:
+ //          shamt = (1-offset)*16;
+ //          data = data&0xffff;
+ //          memwb_shadow.memValue = data;
+ //          break;
+ //        default:
+ //          printf("Error MEM_READ @ clock: %u, PC: %04d, instruction: [0x%x]\n",
+ //                      clock, exmem_reg.progCounter, memory[exmem_reg.progCounter]);
+ //          exit(1);
+ //      }
 }
+
 void WB_op(void){
-    // Places result into IDEX_shadow (I think?)
-    //printf(">>>>>>> WB\n");
+    printf(">>>>>>> WB\n");
+    if (memwb_reg.MemtoReg){
+    	writeData = memwb_reg.memValue;
+    } else {
+    	writeData = memwb_reg.alu_Result;
+    }
+
+
+	if(memwb_reg.RegWrite && (memwb_reg.rd != 0)) {
+    	oldData = reg_file[memwb_reg.rd];
+		reg_file[memwb_reg.rd] = writeData;
+	}
+
+
+	return;
 }
 
 void move_shadows_to_reg(void){

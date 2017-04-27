@@ -8,7 +8,7 @@
 
 #ifndef cache_h
 #define cache_h
-#include "pipe.h"
+#include "tools.h"
 
 #define MISS_PENALTY		8			// clock cycles
 

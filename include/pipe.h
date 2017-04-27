@@ -8,8 +8,8 @@
 
 #ifndef pipe_h
 #define pipe_h
-#include "components.h"
 #include "instructions.h"
+#include "cache.h"
 
 void IF_op(void);
 void ID_op(void);
