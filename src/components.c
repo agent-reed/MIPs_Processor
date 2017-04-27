@@ -268,40 +268,53 @@ void initialize_components(void) {
     reg_file[SP] = memory[0];
     reg_file[FP] = memory[1];
     PC_zero = memory[5];
-    initialize_cache(ICache, INST_CACHE);
-    initialize_cache(DCache, DATA_CACHE);
+    initialize_caches(ICache, INST_CACHE);
+    initialize_caches(DCache, DATA_CACHE);
     
     printf("*****************     Cache Initialized.     *****************\n\n");
-    
+    int a = ICache[5].data[0];
+    printf("******        Test Value = %d\n", a);
     printf("INFO: Initializing Components | Stack Pointer: [0x%08x]\tFrame Pointer: [0x%08x] PC: [0x%08x]\n\n", reg_file[SP], reg_file[FP], PC);
 }
 
-void initialize_cache(cache cache_in, cache_type type) {
-	cache_in.misses = 0;
-	cache_in.hits = 0;
-	cache_in.block_size = BLOCK_SIZE;
-	cache_in.write_policy = WRITE_POLICY;
-	
-    if (type == INST_CACHE) {
-		cache_in.size = ICACHE_SIZE;
-		cache_in.num_blocks = ICACHE_SIZE/BLOCK_SIZE;
-		cache_in.data = calloc(ICACHE_SIZE/BLOCK_SIZE, sizeof(cache_block));
-		//zeroCache(cache_in);
-	}
-	else {
-		cache_in.size = DCACHE_SIZE;
-		cache_in.num_blocks = DCACHE_SIZE/BLOCK_SIZE;
-		cache_in.data = calloc(ICACHE_SIZE/BLOCK_SIZE, sizeof(cache_block));
-		//zeroCache(cache_in);
-	}
+void initialize_caches() {
+	ICache = createCache(ICACHE_SIZE, ICACHE_SIZE/BLOCK_SIZE);
+	DCache = createCache(DCACHE_SIZE, DCACHE_SIZE/BLOCK_SIZE);
+	ICache_config = createCacheConfig(ICACHE_SIZE, ICACHE_SIZE/BLOCK_SIZE);
+	DCache_config = createCacheConfig(DCACHE_SIZE, DCACHE_SIZE/BLOCK_SIZE);
 }
 
-void zeroCache(cache cache_in) {
-	for (int i=0; i<cache_in.num_blocks; i++) {
-		for (int j=0; j<BLOCK_SIZE; j++) {
-			cache_in.data[i].value[j] = 0;
-		}
+cache * createCache(int size, int block_num) {
+	cache *cache_out = NULL;
+	unsigned int *data = NULL;
+	
+	cache_out = (cache *)calloc(block_num, sizeof(cache));
+	if (!cache_out) { 
+		printf("ERROR:   Unable to allocate heap memory!\n");
 	}
+	
+	for (int i=0; i<block_num; i++) {
+		data = (unsigned int*)calloc(BLOCK_SIZE, sizeof(unsigned int));
+		if (!data) {
+			printf("ERROR:   Unable to allocate heap memory!\n");
+		}
+		cache_out[i].data = data;
+	}
+	
+	return cache_out;	
+}
+
+cache_config * createCacheConfig(int size, int block_num) {
+	cache_config *config_out = NULL;
+	config_out = (cache_config *)malloc(sizeof(cache_config));
+	
+	config_out->hits = 0;
+	config_out->misses = 0;
+	config_out->size = size;
+	config_out->block_num = block_num;
+	config_out->write_policy = WRITE_POLICY;
+
+	return config_out; 
 }
 
 void initialize_simulation_memory(void){

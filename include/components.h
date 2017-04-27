@@ -103,26 +103,27 @@ typedef struct {
 
 // Cache block structure
 typedef struct {
-	bool valid;
-	bool dirty;
-	unsigned int tag;
-	unsigned int size;					// Size is in words
-	unsigned int value[BLOCK_SIZE];
-} cache_block;
-
-// Cache Structure
-typedef struct {
 	int hits;
 	int misses;
 	int size;
-	int block_size;
-	int num_blocks;
-	int write_policy;					// 0 = write through, 1 = write back
-	cache_block *data;
+	int block_num;
+	int write_policy;					// 0 = write back,     1 = write through
+	
+} cache_config;
+
+// Cache Structure
+typedef struct {
+	bool valid;
+	bool dirt;
+	unsigned int tag;
+	unsigned int *data;
 } cache;
 
-cache ICache;
-cache DCache;
+cache_config *ICache_config;
+cache_config *DCache_config;
+
+cache *ICache;
+cache *DCache;
 
 IFID_Register ifid_reg;
 IFID_Register ifid_shadow;
@@ -137,8 +138,10 @@ MEMWB_Register memwb_reg;
 MEMWB_Register memwb_shadow;
 
 void initialize_components(void);
-void initialize_cache(cache cache_in, cache_type type);
-void zeroCache(cache cache_in);
+void initialize_caches();
+cache * createCache(int size, int block_num);
+cache_config * createCacheConfig(int size, int block_num);
+
 void initialize_simulation_memory(void);
 
 #endif /* components_h */
