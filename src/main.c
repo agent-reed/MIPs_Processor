@@ -11,15 +11,14 @@
 
 
 int main(int argc, const char * argv[]) {
-    
+    int clock_cycle = 0;
     initialize_simulation_memory(); // Must happen before initializing components
     initialize_components();
 
-    int i = 0;
-    while(i <10) {
-    	printf("step(%d) \n",i);
+    while(clock_cycle < 20) {
+    	printf("clock_cycle(%d) \n",clock_cycle);
     	step();
-    	i++;
+    	clock_cycle++;
     }
 
 

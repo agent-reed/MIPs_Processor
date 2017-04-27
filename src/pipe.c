@@ -10,6 +10,8 @@
 #include "pipe.h"
 #include "tools.h"
 
+//bool PC_branch = false;
+
 void IF_op(void){
 	//printf(">>>>>>> IF\n");
 	// if (PC_branch) {
@@ -33,7 +35,16 @@ void ID_op(void){
 	unsigned int rd = InstructionElement(instruction, RD);
 	unsigned int rt = InstructionElement(instruction, RT);
 	unsigned int op = InstructionElement(instruction, OP);
-	int extendedValue = InstructionElement(instruction, IMM);
+	int signextended = InstructionElement(instruction, IMM);
+	if (signextended&0x00008000){
+		printf("yes, SE\n");
+		signextended = signextended|0xffff0000;
+	} else {
+		printf("no, SE\n");
+		signextended = signextended&0x0000ffff;
+	}
+	idex_shadow.signextended = signextended;
+
 	int read1;
 	int read2;
 
@@ -51,7 +62,7 @@ void ID_op(void){
 
   	//TODO: Do ID forwarding here
 
-	CTL_Perform(op, read1, read2, extendedValue);
+	CTL_Perform(op, read1, read2, signextended);
 
 	return;
 }
@@ -70,6 +81,7 @@ void EX_op(void){
 	exmem_shadow.Branch = idex_reg.Branch;
 	exmem_shadow.MemRead = idex_reg.MemRead;
 	exmem_shadow.MemWrite = idex_reg.MemWrite;
+	exmem_shadow.dataToMem = val2;
 
 	if (idex_reg.RegDst) {
 		exmem_shadow.rd = idex_reg.rd;
@@ -77,6 +89,10 @@ void EX_op(void){
 
 	else {
 		exmem_shadow.rd = idex_reg.rt;
+	}
+
+	if (idex_reg.ALUSrc){
+		val2 = idex_reg.signextended;
 	}
 
 	ALU_Perform(val1, val2, idex_reg.ALUOp);
@@ -281,7 +297,7 @@ void ALU_Perform(int val1, int val2, alu_op operation) {
 	int zero = 0;
 	unsigned int shamt;
 
-	printf("\nALU OPERATION: ~~~~~");
+	printf("\nALU OPERATION: ");
 	shamt = InstructionElement(idex_reg.signextended, SHAMT);
 	if(idex_reg.ALUOp == ALUOP_LWSW) {
 		result = val1 + val2;
@@ -379,9 +395,9 @@ void step(void){
 	EX_op();
 	MEM_op();
 	WB_op();
-	print_pipelineReg(IFID);
-	print_pipelineReg(IDEX);
-	print_pipelineReg(EXMEM);
+	//print_pipelineReg(IFID);
+	//print_pipelineReg(IDEX);
+	//print_pipelineReg(EXMEM);
 }
 
 
