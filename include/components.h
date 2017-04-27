@@ -11,8 +11,9 @@
 
 #define MEMORY_SIZE			4096
 
-#define DMEMORY_SIZE		256
-#define IMEMORY_SIZE		256
+#define DCACHE_SIZE		256
+#define ICACHE_SIZE		256
+#define BLOCK_SIZE		1
 
 #define REGISTER_COUNT		32
 
@@ -27,14 +28,13 @@ unsigned int PC_one;
 // Memory Declarations
 unsigned int reg_file[REGISTER_COUNT];
 unsigned int memory[MEMORY_SIZE];
-unsigned int imemory[IMEMORY_SIZE];
-unsigned int dmemory[DMEMORY_SIZE];
 
 //Type Definitions
 typedef enum {ALUOP_LWSW = 0, ALUOP_BEQ, ALUOP_R, ALUOP_NOP} alu_op;
 typedef enum {STAGE_IF=0x0, STAGE_ID, STAGE_EX, STAGE_MEM, STAGE_WB} stage;
 typedef enum {IFID = 0, IDEX, EXMEM, MEMWB} pipeline_reg;
 typedef enum {false = 0, true = 1} bool;
+typedef enum {INST_CACHE, DATA_CACHE} cache_type; 
 
 bool PC_branch;
 // Register Definitions
@@ -99,19 +99,27 @@ typedef struct {
     
 } MEMWB_Register;
 
+typedef struct {
+	bool valid;
+	bool dirty;
+	unsigned int tag;
+	unsigned int size;					// Size is in words
+	unsigned int block[BLOCK_SIZE];
+} cache_block;
+
 // Cache Structure
 typedef struct {
 	int hits;
 	int misses;
 	int size;
 	int block_size;
-	int num_lines;
+	int num_blocks;
 	int write_policy;					// 0 = write through, 1 = write back
-	
+	cache_block *data;
 } cache;
 
-typedef struct {
-}
+cache ICache;
+cache DCache;
 
 IFID_Register ifid_reg;
 IFID_Register ifid_shadow;

@@ -267,7 +267,13 @@ void initialize_components(void) {
     reg_file[SP] = memory[0];
     reg_file[FP] = memory[1];
     PC_zero = memory[5];
+    initialize_cache(ICache, INST_CACHE);
+    initialize_cache(DCache, DATA_CACHE);
+    
     printf("INFO: Initializing Components | Stack Pointer: [0x%08x]\tFrame Pointer: [0x%08x] PC: [0x%08x]\n\n", reg_file[SP], reg_file[FP], PC);
+}
+
+void initialize_cache(cache cache_in, cache_type type) {
 }
 
 void initialize_simulation_memory(void){

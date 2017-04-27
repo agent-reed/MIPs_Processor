@@ -25,6 +25,7 @@ unsigned int InstructionElement(int instruction, ins_element element) {
         case IMM:
             return (instruction&IMM_MASK);
     }
+    return -1;
 }
 
 ins_format InstructionFormat(int ins) {

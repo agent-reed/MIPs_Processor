@@ -8,19 +8,9 @@
 
 #ifndef cache_h
 #define cache_h
-#include "components.h"
-#include "instructions.h"
+#include "pipe.h"
 
 #define MISS_PENALTY		8			// clock cycles
-
-// Cache Structure Values
-#define ICACHE_SIZE 	256
-#define DCACHE_SIZE		256
-#define BLOCK_SIZE		1
-
-// cache declarations
-cache data_cache;
-cache inst_cache;
 
 void readDataCache(unsigned int data, unsigned int address);
 void readInstCache(unsigned int inst, unsigned int address);
