@@ -10,8 +10,9 @@
 #define components_h
 
 #define MEMORY_SIZE			4096
-#define DMEMORY_SIZE		4096
-#define IMEMORY_SIZE		4096
+
+#define DMEMORY_SIZE		256
+#define IMEMORY_SIZE		256
 
 #define REGISTER_COUNT		32
 
@@ -98,6 +99,19 @@ typedef struct {
     
 } MEMWB_Register;
 
+// Cache Structure
+typedef struct {
+	int hits;
+	int misses;
+	int size;
+	int block_size;
+	int num_lines;
+	int write_policy;					// 0 = write through, 1 = write back
+	
+} cache;
+
+typedef struct {
+}
 
 IFID_Register ifid_reg;
 IFID_Register ifid_shadow;
