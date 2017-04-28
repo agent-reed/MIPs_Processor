@@ -38,8 +38,13 @@ void writeInstCache(unsigned int inst, unsigned int address) {
 		ICache[block_index].data[line] = inst;	
 }
 
+<<<<<<< HEAD
 void decodeAddress(cache_type type, unsigned int addr, 
 					unsigned int *tag, unsigned int *block_index, unsigned int *line) {
+=======
+// unsigned int *tag?
+void decodeAddress(cache_type type, unsigned int addr, int *tag, int *block_index, int *line) {
+>>>>>>> e75c8cedcc9583daf4fc8e149dd76c234c0d423a
 	unsigned int loc_addr = addr;
 	*line = loc_addr&CacheLineMask;
 	

@@ -9,29 +9,33 @@
 #include <stdio.h>
 #include "pipe.h"
 
-//bool PC_branch = false;
+bool PC_branch = false;
 int writeData;
 int oldData;
 
 void IF_op(void){
-	printf(">>>>>>> IF\n");
-	// if (PC_branch) {
-	// 	PC = PC_one;
-	// 	PC_branch = !PC_branch;
-	// }
-	// else {
-	// 	PC = PC_zero;
-	// }
-	PC = PC_zero;
+	//printf(">>>>>>> IF\n");
+	if (PC == 0){
+		printf("PC is Zero\n");
+	}
+	if (PC_branch) {
+		printf("	BRANCH DETECTED\n");
+		PC = PC_one;
+		PC_branch = !PC_branch;
+		printf(" 	New PC: (%d)\n", PC);
+	}
+	else {
+		PC = PC_zero;
+	}
 	PC_zero = PC+1;
-	ifid_shadow.instruction = memory[PC_zero];
-	ifid_shadow.nextPC = PC_zero;
+	ifid_shadow.instruction = memory[PC];
+	ifid_shadow.nextPC = PC;
 
 	return;
 }
 
 void ID_op(void){
-	printf(">>>>>>> ID\n");
+	//printf(">>>>>>> ID\n");
 	int instruction = ifid_reg.instruction;
 	unsigned int rs = InstructionElement(instruction, RS);
 	unsigned int rd = InstructionElement(instruction, RD);
@@ -39,10 +43,10 @@ void ID_op(void){
 	unsigned int op = InstructionElement(instruction, OP);
 	int signextended = InstructionElement(instruction, IMM);
 	if (signextended&0x00008000){
-		printf("yes, SE\n");
+		//printf("	SignEx\n");
 		signextended = signextended|0xffff0000;
 	} else {
-		printf("no, SE\n");
+		//printf("	notSignEx\n");
 		signextended = signextended&0x0000ffff;
 	}
 	idex_shadow.signextended = signextended;
@@ -70,12 +74,18 @@ void ID_op(void){
 }
 
 void EX_op(void){
-	printf(">>>>>>> EX\n");
-
+	//printf(">>>>>>> EX\n");
+	if (PC == 0){
+		printf("PC is Zero\n");
+		return;
+	}
 	int val1 = idex_reg.read_reg1;
 	int val2 = idex_reg.read_reg2;
 
-	//TODO: forward EX here
+	bool found_forward = forward_handler(&val1, &val2);
+	if (found_forward) {
+		printf("Found Forwarding Condition\n");
+	}
 
 	//Continue to pass on control to next pipeline registers
 	exmem_shadow.RegWrite = idex_reg.RegWrite;
@@ -104,8 +114,11 @@ void EX_op(void){
 void MEM_op(void){
 	// Places result into MEMWB_shadow
 	// And probably also stuff into memory[]
-	printf(">>>>>>> MEM\n");
-
+	//printf(">>>>>>> MEM\n");
+	if (PC == 0){
+		printf("PC is Zero\n");
+		return;
+	}
 	unsigned int addr;
 	unsigned short offset;
   	unsigned short shamt;
@@ -122,14 +135,14 @@ void MEM_op(void){
 	addr = ((unsigned int)exmem_reg.alu_Result)>>2;
 
 	if(exmem_reg.MemWrite) {
-		printf("MemWrite true -> Write to cache?\n");
+		//printf("	MemWrite true -> Write to cache?\n");
 		//Success = writeToCache(addr, (unsigned int)exmem_reg.dataToMem, offset, exmem_reg.dataLen);
 	}
 
 	//Temporary
 	memwb_shadow.memValue = memory[addr];
-	printf("address: %u\n", addr);
-	printf("Memvalue to write: 0x%x\n", memory[addr]);
+	//printf("	Address: %u\n", addr);
+	//printf("	Memvalue to write: 0x%x\n", memory[addr]);
 
 	// if(exmem_reg.MemRead) {
 	//  if(!readFromCache(CACHE_D, addr, &data)) {
@@ -170,7 +183,11 @@ void MEM_op(void){
 }
 
 void WB_op(void){
-    printf(">>>>>>> WB\n");
+    //printf(">>>>>>> WB\n");
+    if (PC == 0){
+		printf("PC is Zero\n");
+		return;
+	}
     if (memwb_reg.MemtoReg){
     	writeData = memwb_reg.memValue;
     } else {
@@ -375,15 +392,15 @@ void ALU_Perform(int val1, int val2, alu_op operation) {
 	int zero = 0;
 	unsigned int shamt;
 
-	printf("\nALU OPERATION: ");
+	//printf("	ALU OPERATION:\n");
 	shamt = InstructionElement(idex_reg.signextended, SHAMT);
 	if(idex_reg.ALUOp == ALUOP_LWSW) {
 		result = val1 + val2;
-		printf("Executing LWSW. Res: (%d) \n", result);
+		//printf("	Executing LWSW. Res: (%d) \n", result);
 	}
 	else if(idex_reg.ALUOp == ALUOP_R) {
 		if(idex_reg.opCode) {
-			printf(" I with op: (0x%x)\n", idex_reg.opCode);
+			//printf("	I with op: (0x%x)\n", idex_reg.opCode);
 			switch(idex_reg.opCode) {
 					case I_ADDI:
 						result = (int)val1 + (int)val2;
@@ -406,13 +423,13 @@ void ALU_Perform(int val1, int val2, alu_op operation) {
 						else result = 1;
 						break;
 					default:
-						printf("Did not recognize the op code for EX...");
+						printf("	Did not recognize the op code for EX...");
 			}
-		}
+		} 
 		else {
 			// R
 			unsigned int func = InstructionElement(idex_reg.signextended, FUNCT);
-			printf(" R with func: (0x%x)\n", func);
+			//printf("	R with func: (0x%x)\n", func);
 			switch (func) {
 				case R_ADD:
 					result = val1 + val2;
@@ -466,6 +483,61 @@ void ALU_Perform(int val1, int val2, alu_op operation) {
 	exmem_shadow.alu_Result = result;
 }
 
+bool forward_handler(int *val1, int *val2){
+		unsigned short forwardA = 0;
+		unsigned short forwardB = 0;
+		bool found = false;
+
+		// From Lecture 16:
+
+		//Ex hazrard
+		if ((exmem_reg.RegWrite && (exmem_reg.rd != 0)) && (exmem_reg.rd == idex_reg.rs)) {
+			forwardA = 2;
+			printf("ex hazard 1\n");
+		}
+		if ((exmem_reg.RegWrite && (exmem_reg.rd != 0)) && (exmem_reg.rd == idex_reg.rt)) {
+			forwardB = 2;
+			printf("ex hazard 2\n");			
+		}
+
+		// Mem hazard
+		if ((memwb_reg.RegWrite && (memwb_reg.rd != 0)) && (memwb_reg.rd == idex_reg.rs)) {
+			forwardA = 1;
+			printf("mem hazard 1\n");	
+		}
+		if ((memwb_reg.RegWrite && (memwb_reg.rd != 0)) && (memwb_reg.rd == idex_reg.rt)) {
+			forwardB = 1;
+			printf("mem hazard 1\n");	
+		}
+
+		switch(forwardA) {
+			case 0:
+				break;
+			case 1:
+				*val1 = writeData;
+				found = true;
+				break;
+			case 2:
+				*val1 = exmem_reg.alu_Result;
+				found = true;
+				break; 
+		}
+
+		switch(forwardB) {
+			case 0:
+				break;
+			case 1:
+				*val2 = writeData;
+				found = true;
+				break;
+			case 2:
+				*val2 = exmem_reg.alu_Result;
+				found = true;
+				break;
+		}
+		return found;
+	}
+
 void step(void){
 	move_shadows_to_reg();
 	IF_op();
@@ -473,9 +545,6 @@ void step(void){
 	EX_op();
 	MEM_op();
 	WB_op();
-	//print_pipelineReg(IFID);
-	//print_pipelineReg(IDEX);
-	//print_pipelineReg(EXMEM);
 }
 
 
