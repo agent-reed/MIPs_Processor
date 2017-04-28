@@ -21,7 +21,6 @@ int main(int argc, const char * argv[]) {
     	clock_cycle++;
     }
 
-
     //print_memoryTrace();
 
     return 0;

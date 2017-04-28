@@ -29,6 +29,7 @@ void IF_op(void){
 
 	return;
 }
+
 void ID_op(void){
 	printf(">>>>>>> ID\n");
 	int instruction = ifid_reg.instruction;

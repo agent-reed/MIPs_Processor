@@ -268,12 +268,10 @@ void initialize_components(void) {
     reg_file[SP] = memory[0];
     reg_file[FP] = memory[1];
     PC_zero = memory[5];
-    initialize_caches(ICache, INST_CACHE);
-    initialize_caches(DCache, DATA_CACHE);
+    initialize_caches();
     
-    printf("*****************     Cache Initialized.     *****************\n\n");
-    int a = ICache[5].data[0];
-    printf("******        Test Value = %d\n", a);
+    printf("INFO: Cache Intialized.\n");
+
     printf("INFO: Initializing Components | Stack Pointer: [0x%08x]\tFrame Pointer: [0x%08x] PC: [0x%08x]\n\n", reg_file[SP], reg_file[FP], PC);
 }
 
@@ -282,9 +280,10 @@ void initialize_caches() {
 	DCache = createCache(DCACHE_SIZE, DCACHE_SIZE/BLOCK_SIZE);
 	ICache_config = createCacheConfig(ICACHE_SIZE, ICACHE_SIZE/BLOCK_SIZE);
 	DCache_config = createCacheConfig(DCACHE_SIZE, DCACHE_SIZE/BLOCK_SIZE);
+	initialize_cache_masks();
 }
 
-cache * createCache(int size, int block_num) {
+cache *createCache(int size, int block_num) {
 	cache *cache_out = NULL;
 	unsigned int *data = NULL;
 	
@@ -304,7 +303,7 @@ cache * createCache(int size, int block_num) {
 	return cache_out;	
 }
 
-cache_config * createCacheConfig(int size, int block_num) {
+cache_config *createCacheConfig(int size, int block_num) {
 	cache_config *config_out = NULL;
 	config_out = (cache_config *)malloc(sizeof(cache_config));
 	

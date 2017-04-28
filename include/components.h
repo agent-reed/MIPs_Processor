@@ -17,11 +17,11 @@
 #define BLOCK_SIZE			1
 #define WRITE_POLICY		1 			// 1 = Write Back,  0 = Write Through
 
-#define REGISTER_COUNT		32
-
 // Registers
 #define SP					29
 #define FP					30
+
+#define REGISTER_COUNT		32
 
 unsigned int PC;
 unsigned int PC_zero;
@@ -138,9 +138,9 @@ MEMWB_Register memwb_reg;
 MEMWB_Register memwb_shadow;
 
 void initialize_components(void);
-void initialize_caches();
-cache * createCache(int size, int block_num);
-cache_config * createCacheConfig(int size, int block_num);
+void initialize_caches(void);
+cache *createCache(int size, int block_num);
+cache_config *createCacheConfig(int size, int block_num);
 
 void initialize_simulation_memory(void);
 
