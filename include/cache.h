@@ -13,10 +13,8 @@
 #define MISS_PENALTY		8			// clock cycles
 
 unsigned int CacheLineMask;
-
 unsigned int iCacheBlockMask;
 unsigned int iCacheTagMask;
-
 unsigned int dCacheBlockMask;
 unsigned int dCacheTagMask;
 
@@ -25,7 +23,8 @@ bool readInstCache(unsigned int *inst, unsigned int address);
 void writeDataCache(unsigned int data, unsigned int address);
 void writeInstCache(unsigned int inst, unsigned int address);
 
-void decodeAddress(cache_type type, unsigned int addr, int *tag, int *block_index, int *line);
-void initialize_cache_masks();
+void decodeAddress(cache_type type, unsigned int addr, 
+					unsigned int *tag, unsigned int *block_index, unsigned int *line);
+void initialize_cache_masks(void);
 
 #endif /* cache_h */
