@@ -6,40 +6,91 @@
 #include <cache.h>
 #include <limits.h>
 
-bool readDataCache(unsigned int *data, unsigned int address) {
-		unsigned int block_index, tag, line;
-		decodeAddress(DATA_CACHE, address, &tag, &block_index, &line);
-		
-		//cache *temp_cache = DCache[block_index];
-		
+// Main entry point for all data reads.
+bool readCache(cache_type type, unsigned int *data, unsigned int address) {
+	if (!CACHE_ENABLE) {
+		// go straight to memory
+		// not yet implemented so return false
 		return false;
+	}
+	if (UNIFIED_CACHE) {
+		// read from unified cache
+		// not yet implemented so return false
+		return false;
+	}	
+	if (type == DATA_CACHE) {
+		return readDataCache(data, address);
+	} else {
+		return readInstCache(data, address);
+	} 
+}
+
+// Main entry point for all data writes.
+bool writeCache(cache_type type, unsigned int *data, unsigned int address){
+	if (!CACHE_ENABLE) {
+		// go straight to memory
+		// not yet implemented so return false
+		return false;
+	}
+	if (UNIFIED_CACHE) {
+		// write to unified cache
+		// not yet implemented so return false
+		return false;
+	}
+	
+	if (type == DATA_CACHE) {
+		writeDataCache(data, address);
+		return true;
+	} else {
+		writeInstCache(data, address);
+		return true;
+	}
+}
+
+bool readDataCache(unsigned int *data, unsigned int address) {
+	unsigned int block_index, tag, line;
+	decodeAddress(DATA_CACHE, address, &tag, &block_index, &line);
+	
+	if ((DCache[block_index].tag == tag) && (DCache[block_index].valid[line])) {
+		// HIT!
+		*data = DCache[block_index].data[line];
+		return true;
+	}
+	return false;
 }
 
 bool readInstCache( unsigned int *inst, unsigned int address) {
-		unsigned int block_index, tag, line;
-		decodeAddress(INST_CACHE, address, &tag, &block_index, &line);
-		
-		return false;
-}
-
-void writeDataCache(unsigned int data, unsigned int address) {
-		unsigned int block_index, tag, line;
-		decodeAddress(DATA_CACHE, address, &tag, &block_index, &line);
-		
-		DCache[block_index].tag = tag;
-		DCache[block_index].data[line] = data;
-}
-
-void writeInstCache(unsigned int inst, unsigned int address) {
-		unsigned int block_index, tag, line;
-		decodeAddress(INST_CACHE, address, &tag, &block_index, &line);
+	unsigned int block_index, tag, line;
+	decodeAddress(INST_CACHE, address, &tag, &block_index, &line);
 	
-		ICache[block_index].tag = tag;
-		ICache[block_index].data[line] = inst;	
+	if ((ICache[block_index].tag == tag) && (ICache[block_index].valid[line])) {
+		// HIT!
+		*inst = ICache[block_index].data[line];
+		return true;
+	}	
+	return false;
+}
+
+void writeDataCache(unsigned int *data, unsigned int address) {
+	unsigned int block_index, tag, line;
+	decodeAddress(DATA_CACHE, address, &tag, &block_index, &line);
+		
+	DCache[block_index].tag = tag;
+	DCache[block_index].data[line] = *data;
+	DCache[block_index].valid[line] = true;
+}
+
+void writeInstCache(unsigned int *inst, unsigned int address) {
+	unsigned int block_index, tag, line;
+	decodeAddress(INST_CACHE, address, &tag, &block_index, &line);
+	
+	ICache[block_index].tag = tag;
+	ICache[block_index].data[line] = *inst;
+	ICache[block_index].valid[line] = true;	
 }
 
 void decodeAddress(cache_type type, unsigned int addr, 
-					unsigned int *tag, unsigned int *block_index, unsigned int *line) {
+						unsigned int *tag, unsigned int *block_index, unsigned int *line) {
 	unsigned int loc_addr = addr;
 	*line = loc_addr&CacheLineMask;
 	

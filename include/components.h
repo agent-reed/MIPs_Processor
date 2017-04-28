@@ -12,6 +12,8 @@
 #define MEMORY_SIZE			4096
 
 // Cache Configuration
+#define CACHE_ENABLE		1  			// 1 = Caching enableb,  0 = No Caching
+#define UNIFIED_CACHE		0			// 1 = Single cache,   0 = Seperate data & instruction caches
 #define DCACHE_SIZE			256
 #define ICACHE_SIZE			128
 #define BLOCK_SIZE			1
@@ -101,7 +103,7 @@ typedef struct {
     
 } MEMWB_Register;
 
-// Cache block structure
+// Cache Metadata, each cache gets one.
 typedef struct {
 	int hits;
 	int misses;
@@ -113,11 +115,13 @@ typedef struct {
 
 // Cache Structure
 typedef struct {
-	bool valid;
+	bool *valid;
 	bool dirt;
 	unsigned int tag;
 	unsigned int *data;
 } cache;
+
+
 
 cache_config *ICache_config;
 cache_config *DCache_config;

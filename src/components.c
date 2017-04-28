@@ -282,6 +282,7 @@ void initialize_caches() {
 cache *createCache(int size, int block_num) {
 	cache *cache_out = NULL;
 	unsigned int *data = NULL;
+	bool *valid = NULL;
 	
 	cache_out = (cache *)calloc(block_num, sizeof(cache));
 	if (!cache_out) { 
@@ -290,10 +291,16 @@ cache *createCache(int size, int block_num) {
 	
 	for (int i=0; i<block_num; i++) {
 		data = (unsigned int*)calloc(BLOCK_SIZE, sizeof(unsigned int));
-		if (!data) {
+		valid = (bool *)calloc(BLOCK_SIZE, sizeof(bool));
+		// Initialize all dat as invalid (0)
+		for (int i=0; i<BLOCK_SIZE; i++) {
+			valid[i] = false;
+		}
+		if (!data || !valid) {
 			printf("ERROR:   Unable to allocate heap memory!\n");
 		}
 		cache_out[i].data = data;
+		cache_out[i].valid = valid;
 	}
 	
 	return cache_out;	
