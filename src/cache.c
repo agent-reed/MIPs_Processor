@@ -36,11 +36,12 @@ void writeInstCache(unsigned int inst, unsigned int address) {
 		ICache[block_index].data[line] = inst;	
 }
 
+// unsigned int *tag?
 void decodeAddress(cache_type type, unsigned int addr, int *tag, int *block_index, int *line) {
 	unsigned int loc_addr = addr;
 	*line = loc_addr&CacheLineMask;
 	
-	if (type = DATA_CACHE) {
+	if (type == DATA_CACHE) {
 		*block_index = loc_addr&dCacheBlockMask;
 		*tag = loc_addr&dCacheTagMask;
 	} else {

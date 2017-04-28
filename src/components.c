@@ -2,15 +2,11 @@
 //  components.c
 //  MIPs_Processor
 //
-//  Created by Andrew Gentry on 4/8/17.
-//  Copyright © 2017 agentreed. All rights reserved.
-// make change
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "components.h"
 
-unsigned int program_image[MEMORY_SIZE] = {4000,4000,0,0,0,49,0,0,0,0,
+unsigned int program_image[MEMORY_SIZE] = {4000,4000,0,0,0,50,0,0,0,0,
     0x00001025,     // 	move	v0,zero    <load_arrays>:
     0x24060064,     // 	li	a2,100
     0x8c830000,     // 	lw	v1,0(a0)
