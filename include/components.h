@@ -14,9 +14,9 @@
 // Cache Configuration
 #define CACHE_ENABLE		1  			// 1 = Caching enableb,  0 = No Caching
 #define UNIFIED_CACHE		0			// 1 = Single cache,   0 = Seperate data & instruction caches
-#define DCACHE_SIZE			256
+#define DCACHE_SIZE			128
 #define ICACHE_SIZE			128
-#define BLOCK_SIZE			1
+#define BLOCK_SIZE			4			// Size in words (4-bytes)
 #define WRITE_POLICY		1 			// 1 = Write Back,  0 = Write Through
 
 // Registers
@@ -38,7 +38,8 @@ typedef enum {ALUOP_LWSW = 0, ALUOP_BEQ, ALUOP_R, ALUOP_NOP} alu_op;
 typedef enum {STAGE_IF=0x0, STAGE_ID, STAGE_EX, STAGE_MEM, STAGE_WB} stage;
 typedef enum {IFID = 0, IDEX, EXMEM, MEMWB} pipeline_reg;
 typedef enum {false = 0, true = 1} bool;
-typedef enum {INST_CACHE, DATA_CACHE} cache_type; 
+typedef enum {INST_CACHE, DATA_CACHE} cache_type;
+typedef enum {word = 32, half = 16, byte = 8} data_length; 
 
 bool PC_branch;
 // Register Definitions
@@ -115,8 +116,8 @@ typedef struct {
 
 // Cache Structure
 typedef struct {
-	bool *valid;
-	bool dirt;
+	bool valid;
+	bool dirty;
 	unsigned int tag;
 	unsigned int *data;
 } cache;
