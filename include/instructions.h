@@ -54,12 +54,12 @@
 
 // Useful Masks
 #define OP_MASK				0xFC000000
-#define RS_MASK				0x3E00000
-#define RT_MASK				0x1F0000
-#define RD_MASK				0xF800
-#define SHAMT_MASK			0x7C0
-#define FUNCT_MASK			0x3F
-#define IMM_MASK			0xFFFF
+#define RS_MASK				0x03E00000
+#define RT_MASK				0x001F0000
+#define RD_MASK				0x0000F800
+#define SHAMT_MASK			0x000007C0
+#define FUNCT_MASK			0x0000003F
+#define IMM_MASK			0x0000FFFF
 
 #define OP_SHIFT            0x1A
 #define RS_SHIFT            0x15
