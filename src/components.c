@@ -452,6 +452,7 @@ void initialize_caches() {
 }
 
 cache *createCache(int size, int block_num) {
+	// Configure for unidied caches
 	cache *cache_out = NULL;
 	unsigned int *data = NULL;
 	
@@ -462,16 +463,19 @@ cache *createCache(int size, int block_num) {
 	
 	for (int i=0; i<block_num; i++) {
 		data = (unsigned int*)calloc(BLOCK_SIZE, sizeof(unsigned int));
+		// Initialize all data as invalid (0)
 		if (!data) {
 			printf("ERROR:   Unable to allocate heap memory!\n");
 		}
 		cache_out[i].data = data;
+		cache_out[i].valid = false;
 	}
 	
 	return cache_out;	
 }
 
 cache_config *createCacheConfig(int size, int block_num) {
+	// Configure for unified cache
 	cache_config *config_out = NULL;
 	config_out = (cache_config *)malloc(sizeof(cache_config));
 	
@@ -481,7 +485,7 @@ cache_config *createCacheConfig(int size, int block_num) {
 	config_out->block_num = block_num;
 	config_out->write_policy = WRITE_POLICY;
 
-	return config_out; 
+	return config_out;
 }
 
 void initialize_simulation_memory(void){

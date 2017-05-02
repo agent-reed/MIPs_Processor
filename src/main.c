@@ -24,8 +24,7 @@ int main(int argc, const char * argv[]) {
         //print_just_PC();
     }
 
-    //print_memoryTrace();
-   
-
+    print_memoryTrace();
+    
     return 0;
 }
