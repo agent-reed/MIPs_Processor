@@ -31,8 +31,13 @@ void print_pipelineReg(pipeline_reg pReg) {
 				}
     			printf("|         read_reg1: %d\n", idex_reg.read_reg1);
     			printf("|         read_reg2: %d\n", idex_reg.read_reg2);
-    			printf("|         signextended: %x\n", idex_reg.signextended);
+    			printf("|         signextended: 0x%x\n", idex_reg.signextended);
     			printf("|         opCode: 0x%02x\n", idex_reg.opCode);
+    			printf("|         Branch: %d\n", idex_reg.Branch);
+    			printf("|         MemRead: %d\n", idex_reg.MemRead);
+    			printf("|         MemWrite: %d\n", idex_reg.MemWrite);
+    			printf("|         RegWrite: %d\n", idex_reg.RegWrite);
+    			printf("|         MemToReg: %d\n", idex_reg.MemtoReg);
     			printf("|         rs: %d\n", idex_reg.rs);
     			printf("|         rt: %d\n", idex_reg.rt);
     			printf("|         rd: %d\n", idex_reg.rd);
@@ -45,7 +50,8 @@ void print_pipelineReg(pipeline_reg pReg) {
     			printf("|               RegWrite: %d\n", exmem_reg.RegWrite);
     			printf("|               MemToReg: %d\n", exmem_reg.MemtoReg);
     			printf("|               MemValue: %u\n", exmem_reg.dataToMem);
-    			printf("|               ALU Result: %u\n", exmem_reg.alu_Result);
+    			printf("|               ALU Result: %d\n", exmem_reg.alu_Result);
+    			printf("|               MemWrite: %u\n", exmem_reg.MemWrite);
     			printf("|               Rd: %u\n\n", exmem_reg.rd);
 
 
@@ -54,12 +60,18 @@ void print_pipelineReg(pipeline_reg pReg) {
         case MEMWB:
 				printf("-------------------------MEM/WB Register\n");
     			printf("|                    MemVal: %u\n", memwb_reg.memValue);
-    			printf("|                    alu_result: %u\n", memwb_reg.alu_Result);
+    			printf("|                    alu_result: %d\n", memwb_reg.alu_Result);
     			printf("|                    Rd: %d\n", memwb_reg.rd);
     			printf("|                    RegWrite: %d\n\n", memwb_reg.RegWrite);
     			printf("|                    MemtoReg: %d\n\n", memwb_reg.MemtoReg);
         	return;
 
+	}
+}
+
+void print_reg_file_trace(void){
+	for (int i=0; i<32; i=i+2){
+		printf("Register(%d): %d  |  Register(%d): %d\n",i, reg_file[i], i+1, reg_file[i+1]);
 	}
 }
 

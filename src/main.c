@@ -15,13 +15,15 @@ int main(int argc, const char * argv[]) {
     initialize_simulation_memory(); // Must happen before initializing components
     initialize_components();
 
-    while(clock_cycle < 40) {
+    while(clock_cycle < 30) {
     	printf("\n@clock_cycle(%d) \n",clock_cycle);
     	step();
     	clock_cycle++;
-        //print_just_PC();
         print_all_pipeRegs();
+        print_reg_file_trace();
+        //print_just_PC();
     }
+
     print_memoryTrace();
 	
     return 0;
