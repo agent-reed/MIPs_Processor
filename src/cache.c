@@ -154,7 +154,7 @@ void writeInstCache(unsigned int *inst, unsigned int address, data_length size) 
 	
 	if (size != word) {
 		printf("ERROR: Instructions are 1 word in size!\n");
-		return false;
+		return;
 	}
 	
 	if ((ICache[block_index].tag == tag) && (DCache[block_index].valid)) {

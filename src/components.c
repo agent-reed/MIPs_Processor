@@ -931,7 +931,7 @@ unsigned int program_image[MEMORY_SIZE] = {4000,4000,0,0,0,50,0,0,0,0,
 void initialize_components(void) {
     reg_file[SP] = memory[0];
     reg_file[FP] = memory[1];
-    PC_zero = memory[5];
+    PC_zero = memory[5]*4;
     initialize_caches();
     initialize_cache_masks();
     

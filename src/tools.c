@@ -38,6 +38,7 @@ void print_pipelineReg(pipeline_reg pReg) {
     			printf("|         MemWrite: %d\n", idex_reg.MemWrite);
     			printf("|         RegWrite: %d\n", idex_reg.RegWrite);
     			printf("|         MemToReg: %d\n", idex_reg.MemtoReg);
+    			printf("|         ALU_Src: %d\n", idex_reg.ALUSrc);
     			printf("|         rs: %d\n", idex_reg.rs);
     			printf("|         rt: %d\n", idex_reg.rt);
     			printf("|         rd: %d\n", idex_reg.rd);
