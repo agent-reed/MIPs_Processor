@@ -12,11 +12,11 @@
 #define MEMORY_SIZE			4096
 
 // Cache Configuration
-#define CACHE_ENABLE		1  			// 1 = Caching enableb,  0 = No Caching
+#define CACHE_ENABLE		0  			// 1 = Caching enabled,  0 = No Caching
 #define UNIFIED_CACHE		0			// 1 = Single cache,   0 = Seperate data & instruction caches
-#define DCACHE_SIZE			128
+#define DCACHE_SIZE			256
 #define ICACHE_SIZE			128
-#define BLOCK_SIZE			4			// Size in words (4-bytes)
+#define BLOCK_SIZE			16			// Size in words (4-bytes)
 #define WRITE_POLICY		1 			// 1 = Write Back,  0 = Write Through
 
 // Registers
@@ -122,7 +122,10 @@ typedef struct {
 	unsigned int *data;
 } cache;
 
-
+typedef struct {
+	unsigned int addr;
+	unsigned int data;
+} write_buffer;
 
 cache_config *ICache_config;
 cache_config *DCache_config;

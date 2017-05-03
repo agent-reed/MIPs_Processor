@@ -31,7 +31,8 @@ bool readDataCache(unsigned int *data, unsigned int address, data_length size);
 bool readInstCache(unsigned int *inst, unsigned int address, data_length size);
 void writeDataCache(unsigned int *data, unsigned int address, data_length size);
 void writeInstCache(unsigned int *inst, unsigned int address, data_length size);
-
+void readFromWord(unsigned int *destination, unsigned int *data, unsigned int address, data_length size);
+void writeToWord(unsigned int *destination, unsigned int *data, unsigned int address, data_length size);
 void fillCacheBlock(cache_type type, unsigned int address);
 void decodeAddress(cache_type type, unsigned int addr, 
 						unsigned int *tag, unsigned int *block_index, 
