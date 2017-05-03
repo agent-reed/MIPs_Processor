@@ -25,6 +25,6 @@ int main(int argc, const char * argv[]) {
     }
 
     print_memoryTrace();
-	
+    TestCache();
     return 0;
 }

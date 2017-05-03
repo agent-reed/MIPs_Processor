@@ -12,12 +12,12 @@
 #define MEMORY_SIZE			4096
 
 // Cache Configuration
-#define CACHE_ENABLE		0  			// 1 = Caching enabled,  0 = No Caching
+#define CACHE_ENABLE		1  			// 1 = Caching enabled,  0 = No Caching
 #define UNIFIED_CACHE		0			// 1 = Single cache,   0 = Seperate data & instruction caches
-#define DCACHE_SIZE			256
-#define ICACHE_SIZE			128
-#define BLOCK_SIZE			16			// Size in words (4-bytes)
-#define WRITE_POLICY		1 			// 1 = Write Back,  0 = Write Through
+#define DCACHE_SIZE			64
+#define ICACHE_SIZE			64
+#define BLOCK_SIZE			4			// Size in words (4-bytes)
+#define WRITE_THROUGH		1 			// 1 = Write Through,  0 = Write Back
 
 // Registers
 #define SP					29
@@ -106,12 +106,10 @@ typedef struct {
 
 // Cache Metadata, each cache gets one.
 typedef struct {
-	int hits;
-	int misses;
+	unsigned int hits;
+	unsigned int misses;
 	int size;
 	int block_num;
-	int write_policy;					// 0 = write back,     1 = write through
-	
 } cache_config;
 
 // Cache Structure

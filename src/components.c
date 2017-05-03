@@ -489,7 +489,6 @@ cache_config *createCacheConfig(int size, int block_num) {
 	config_out->misses = 0;
 	config_out->size = size;
 	config_out->block_num = block_num;
-	config_out->write_policy = WRITE_POLICY;
 
 	return config_out;
 }
