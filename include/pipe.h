@@ -23,6 +23,8 @@ void move_shadows_to_reg(void);
 void ALU_Perform(int src1, int src2, alu_op operation);
 void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int extendedValue);
 bool forward_handler(int *val1, int *val2);
+bool load_use_handler(void);
+void insert_bubble(void);
 
 void initialize_pipeline();
 
