@@ -13,11 +13,14 @@ bool PC_branch = false;
 int writeData;
 int oldData;
 
+bool lu_hazard = false;
+
 void IF_op(void){
 	//printf(">>>>>>> IF\n");
 	if (PC == 0){
 		printf("PC is Zero\n");
 	}
+
 	if (PC_branch) {
 		printf("	BRANCH DETECTED\n");
 		PC = PC_one;
@@ -29,7 +32,7 @@ void IF_op(void){
 	}
 	PC_zero = PC+1;
 	ifid_shadow.instruction = memory[PC];
-	ifid_shadow.nextPC = PC;
+	ifid_shadow.nextPC = PC_zero;
 
 	return;
 }
@@ -71,6 +74,11 @@ void ID_op(void){
   	//TODO: Do ID forwarding here
 
 	CTL_Perform(op, read1, read2, signextended);
+	bool lu_true = load_use_handler();
+	if (lu_true) {
+		lu_hazard = true;
+		printf("Found a Load Use Case -- Inserting Bubble\n");
+	}
 
 	return;
 }
@@ -138,7 +146,7 @@ void MEM_op(void){
 
 	offset = exmem_reg.alu_Result;
 
-	addr = ((unsigned int)exmem_reg.alu_Result);
+	addr = ((unsigned int)exmem_reg.alu_Result); // >>2? For byte address
 	//printf("Address: %u\n", addr);
 
 	if(exmem_reg.MemWrite) {
@@ -220,6 +228,20 @@ void WB_op(void){
 void move_shadows_to_reg(void){
 	// set each Stage_reg to be respective Stage_shadow	
 	//printf(">>>>>>> Shadows 2 Reg\n");
+
+	if(lu_hazard){
+		ifid_reg = ifid_reg;
+		PC_zero = PC_zero - 1;
+		insert_bubble();
+		idex_reg = idex_shadow;
+		exmem_reg = exmem_shadow;
+		memwb_reg = memwb_shadow;
+
+		// Lower the flag
+		lu_hazard = false;
+		return;
+	} 
+
 	ifid_reg = ifid_shadow;
 	idex_reg = idex_shadow;
 	exmem_reg = exmem_shadow;
@@ -339,20 +361,22 @@ void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int ext
 		case 0x05|I_BNE:
 			if(regVal1 == regVal2) break;
 			PC_branch = true;
+			printf("ex: %d  npc: %d\n",extendedValue, ifid_reg.nextPC);
 			PC_one = extendedValue+ifid_reg.nextPC;
+			printf("PC_one %d\n",PC_one );
 			break;
-   //  case 0x06|I_BLEZ:
-			// if(regVal1 > regVal2) break;
-			// PC_branch = true;
-			// PC_one = extendedValue+ifid_reg.nextPC;
-			// break;
-   //  case 0x07|I_BGTZ:
-   //    if(regVal1 <= 0) break;
-			// PC_branch = true;
-			// PC_one = extendedValue+ifid_reg.nextPC;
-   //    break;
-		// case J-format
+	    case 0x06:
+				if(regVal1 > regVal2) break;
+				PC_branch = true;
+				PC_one = extendedValue+ifid_reg.nextPC;
+				break;
+	    case 0x07:
+	      if(regVal1 <= 0) break;
+				PC_branch = true;
+				PC_one = extendedValue+ifid_reg.nextPC;
+	      		break;
 		case 0x3|J_JAL:
+			printf("Contol Msg: J_JAL\n");
 			jImm = (ifid_reg.instruction&0x03ffffff)<<2;
 			msb = ((ifid_reg.nextPC-1)<<2)&0xf0000000;
 			PC_one = (jImm|msb)>>2;
@@ -360,6 +384,7 @@ void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int ext
 			reg_file[31] = (ifid_reg.nextPC + 1);
 			break;
 		case 0x2|J_J:
+			printf("Contol Msg: J_J\n");
 			jImm = (ifid_reg.instruction&0x03ffffff)<<2;
 			msb = ((ifid_reg.nextPC-1)<<2)&0xf0000000;
 			PC_one = (jImm|msb)>>2;
@@ -369,6 +394,7 @@ void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int ext
       switch(idex_shadow.rt) {
         case 0x0:
           //bltz
+          printf("Contol Msg: bltz\n");
           if(regVal1 < 0) {
           PC_branch = true;
           PC_one = extendedValue+ifid_reg.nextPC;
@@ -376,12 +402,14 @@ void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int ext
           break;
         case 0x1:
           // bgez
+        printf("Contol Msg: bgez\n");
           if(regVal1 >= 0) {
             PC_branch = true;
             PC_one = extendedValue+ifid_reg.nextPC;
           }
           break;
         case 0x10:
+        printf("Contol Msg: bltzal\n");
           // bltzal
           if(regVal1 < 0) {
             reg_file[31] = (ifid_reg.nextPC+1);
@@ -391,6 +419,7 @@ void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int ext
         break;
         case 0x11:
           // bgezal
+        printf("Contol Msg: bgezal\n");
           if(regVal1 >= 0) {
             reg_file[31] = (ifid_reg.nextPC+1);
             PC_branch = true;
@@ -515,6 +544,31 @@ void ALU_Perform(int val1, int val2, alu_op operation) {
 	exmem_shadow.alu_Result = result;
 }
 
+bool load_use_handler(void) {
+	// Make sure there isnt a load/use case
+	// If there is - stall the pipeline
+	bool found = false;
+
+	if (idex_reg.MemRead && (idex_reg.rt != 0) && ((idex_reg.rt == idex_shadow.rt) || (idex_reg.rt == idex_shadow.rs))){
+      found = true;
+    }
+    return found;
+}
+
+void insert_bubble(void) {
+	idex_shadow.rs = 0;
+	idex_shadow.rd = 0;
+	idex_shadow.rt = 0;
+	idex_shadow.opCode = 0;
+	idex_shadow.read_reg1 = 0;
+	idex_shadow.read_reg2 = 0;
+	idex_shadow.signextended = 0;
+	idex_shadow.RegWrite= 0;
+	idex_shadow.RegDst = 0;
+	idex_shadow.MemWrite = 0;
+	idex_shadow.ALUOp = ALUOP_NOP;
+}
+
 bool forward_handler(int *val1, int *val2){
 		unsigned short forwardA = 0;
 		unsigned short forwardB = 0;
@@ -573,7 +627,7 @@ bool forward_handler(int *val1, int *val2){
 				break;
 			case 2:
 				*val2 = exmem_reg.alu_Result;
-				printf("!! Forward: Setting val1 to (%d)\n",exmem_reg.alu_Result );
+				printf("!! Forward: Setting val2 to (%d)\n",exmem_reg.alu_Result );
 				found = true;
 				break;
 		}
