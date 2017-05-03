@@ -23,6 +23,6 @@ int main(int argc, const char * argv[]) {
         print_all_pipeRegs();
     }
     print_memoryTrace();
-    
+	
     return 0;
 }
