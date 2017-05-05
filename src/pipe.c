@@ -156,17 +156,15 @@ void MEM_op(void){
 	//printf("Address: %u\n", addr);
 
 	if(exmem_reg.MemWrite) {
-		printf("Writing %d to memory[%u]\n",exmem_reg.dataToMem, addr);
 		writeCache(DATA_CACHE, &exmem_reg.dataToMem, addr, word);
-
-		//memory[addr] = exmem_reg.dataToMem;
-		//printf("	MemWrite true -> Write to cache?\n");
-		//Success = writeToCache(addr, (unsigned int)exmem_reg.dataToMem, offset, exmem_reg.dataLen);
+		printf("Writing %u to memory[%u]\n",exmem_reg.dataToMem, addr>>2);
 	}
 
 	//Temporary
 	if(exmem_reg.MemRead) {
-		memwb_shadow.memValue = memory[addr];
+		readCache(DATA_CACHE, &memwb_shadow.memValue, addr, word);
+		printf("Reading in %u from memory[%u]\n",memwb_shadow.memValue, addr>>2);
+		//memwb_shadow.memValue = memory[addr];
 	}
 	//printf("	Address: %u\n", addr);
 	//printf("	Memvalue to write: 0x%x\n", memory[addr]);
@@ -220,7 +218,7 @@ void WB_op(void){
     } else {
     	writeData = memwb_reg.alu_Result;
     }
-    //printf("Write data@wb: %d\n", writeData);
+    printf("Write data@wb: %d\n", writeData);
 
     //printf("RegWrite: %d && reg.id: %d\n",memwb_reg.RegWrite, memwb_reg.rd);
 	if(memwb_reg.RegWrite && (memwb_reg.rd != 0)) {
@@ -249,6 +247,16 @@ void move_shadows_to_reg(void){
 		lu_hazard = false;
 		return;
 	} 
+
+	if(PC_branch){
+		printf("branch bubble\n");
+		ifid_reg = ifid_reg;
+		PC_zero = PC_zero - 4;
+		insert_bubble();
+		idex_reg = idex_shadow;
+		exmem_reg = exmem_shadow;
+		memwb_reg = memwb_shadow;
+	}
 
 	ifid_reg = ifid_shadow;
 	idex_reg = idex_shadow;
@@ -369,7 +377,6 @@ void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int ext
 		case 0x05|I_BNE:
 			if(regVal1 == regVal2) break;
 			PC_branch = true;
-			printf("ex: %d  npc: %d\n",extendedValue, ifid_reg.nextPC);
 			PC_one = extendedValue+ifid_reg.nextPC;
 			printf("PC_one %d\n",PC_one );
 			break;
@@ -420,7 +427,7 @@ void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int ext
         printf("Contol Msg: bltzal\n");
           // bltzal
           if(regVal1 < 0) {
-            reg_file[31] = (ifid_reg.nextPC+1);
+            reg_file[31] = (ifid_reg.nextPC+4);
             PC_branch = true;
             PC_one = extendedValue+ifid_reg.nextPC;
           }
@@ -429,7 +436,7 @@ void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int ext
           // bgezal
         printf("Contol Msg: bgezal\n");
           if(regVal1 >= 0) {
-            reg_file[31] = (ifid_reg.nextPC+1);
+            reg_file[31] = (ifid_reg.nextPC+4);
             PC_branch = true;
             PC_one = extendedValue+ifid_reg.nextPC;
           }
@@ -508,6 +515,8 @@ void ALU_Perform(int val1, int val2, int rt, int rs, int rd, alu_op operation) {
 				case R_SUB:
 					result = val1 - val2;
 					break;
+				case R_SUBU:
+					result = val1 - val2;
 				case R_AND:
 					result = val1 & val2;
 					break;

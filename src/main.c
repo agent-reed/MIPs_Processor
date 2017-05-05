@@ -15,7 +15,7 @@ int main(int argc, const char * argv[]) {
     initialize_simulation_memory(); // Must happen before initializing components
     initialize_components();
 
-    while(clock_cycle < 30) {
+    while(clock_cycle < 1700) {
     	printf("\n@clock_cycle(%d) \n",clock_cycle);
     	step();
     	clock_cycle++;
@@ -25,7 +25,7 @@ int main(int argc, const char * argv[]) {
     }
     //print_memoryTrace();
     //TestCache();
-    //print_memoryTrace();
+    print_memoryTrace(1900);
 
     //print_memoryTrace();
     //print_reg_file_trace();

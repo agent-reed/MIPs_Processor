@@ -17,7 +17,7 @@ unsigned int program_image[MEMORY_SIZE] = {
     0x00000000,
     0x00000000,
     0x00000000,
-    0x18c00008,   //    blez    a2,400854 <copy_array+0x24>
+    0x18c00008,   //    blez    a2,400854 <copy_array+0x24> <aka go to bubble sort>
     0x00801025,   //    move    v0,a0
     0x00063080,   //    sll a2,a2,0x2
     0x00862021,   //    addu    a0,a0,a2
@@ -250,7 +250,7 @@ unsigned int program_image[MEMORY_SIZE] = {
     0x00000000,
     0x00000000,
     0x00000000,
-    0x0a000000,
+    0x0a000000,     ///  <<< Start of the memory array >>>>
     0x00000d00,    //   nop
     0x00b00000,    //   nop
     0x000000e0,
@@ -499,7 +499,7 @@ unsigned int program_image[MEMORY_SIZE] = {
     0x000f0f00,
     0x00f0f000,
     0x0f0f0000,
-    0x0000e000,
+    0x0000e000,     // <<<< End of the mem array.   1972 / 4  = 493 
 };
 
 // unsigned int program_image[MEMORY_SIZE] = {
