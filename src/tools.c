@@ -38,6 +38,7 @@ void print_pipelineReg(pipeline_reg pReg) {
     			printf("|         MemWrite: %d\n", idex_reg.MemWrite);
     			printf("|         RegWrite: %d\n", idex_reg.RegWrite);
     			printf("|         MemToReg: %d\n", idex_reg.MemtoReg);
+    			printf("|         ALU_Src: %d\n", idex_reg.ALUSrc);
     			printf("|         rs: %d\n", idex_reg.rs);
     			printf("|         rt: %d\n", idex_reg.rt);
     			printf("|         rd: %d\n", idex_reg.rd);
@@ -70,13 +71,18 @@ void print_pipelineReg(pipeline_reg pReg) {
 }
 
 void print_reg_file_trace(void){
-	for (int i=0; i<32; i=i+2){
-		printf("Register(%d): %d  |  Register(%d): %d\n",i, reg_file[i], i+1, reg_file[i+1]);
+
+	printf("(Zero): %4u  |  (at): %4u\n",reg_file[0], reg_file[1]);
+	printf("  (v0): %4u  |  (v1): %4u\n",reg_file[2], reg_file[3]);
+	printf("  (a0): %4u  |  (a1): %4u\n",reg_file[4], reg_file[5]);
+	printf("  (a2): %4u  |  (a3): %4u\n",reg_file[6], reg_file[7]);
+	for (int i=8; i<32; i=i+2){
+	printf("Reg(%d): %u |  Reg(%d): %u\n",i, reg_file[i], i+1, reg_file[i+1]);
 	}
 }
 
-void print_memoryTrace(void) {
-    for(int i=0; i<MEMORY_SIZE; i++){
+void print_memoryTrace(int size) {
+    for(int i=0; i<size; i++){
         printf("Memory-%u : 0x%08x | \n",i,memory[i]);
         //InstructionFormat(memory[i]);  //With Formats
     }

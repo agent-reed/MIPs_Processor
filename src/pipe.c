@@ -23,16 +23,18 @@ void IF_op(void){
 
 	if (PC_branch) {
 		printf("	BRANCH DETECTED\n");
-		PC = PC_one;
+		PC = PC_one<<2;
 		PC_branch = !PC_branch;
-		printf(" 	New PC: (%d)\n", PC);
+		printf(" 	New PC: (%d)\n", PC>>2);
 	}
 	else {
 		PC = PC_zero;
 	}
-	PC_zero = PC+1;
-	ifid_shadow.instruction = memory[PC];
-	ifid_shadow.nextPC = PC_zero;
+
+	PC_zero = PC+4;
+	//ifid_shadow.instruction = memory[PC];
+	readCache(INST_CACHE, &ifid_shadow.instruction ,PC, word);
+	ifid_shadow.nextPC = PC_zero>>2;
 
 	return;
 }
@@ -65,11 +67,11 @@ void ID_op(void){
 	idex_shadow.opCode = op;
 
 	// Set the read Registers
-	idex_shadow.read_reg1 = (int)reg_file[rs];
-	idex_shadow.read_reg2 = (int)reg_file[rt];
+	idex_shadow.read_reg1 = reg_file[rs];
+	idex_shadow.read_reg2 = reg_file[rt];
 
-	read1 = (int)reg_file[rs];
-  	read2 = (int)reg_file[rt];
+	read1 = reg_file[rs];
+  	read2 = reg_file[rt];
 
   	//TODO: Do ID forwarding here
 
@@ -109,6 +111,10 @@ void EX_op(void){
 	exmem_shadow.MemWrite = idex_reg.MemWrite;
 	exmem_shadow.dataToMem = val2;
 
+	int rt = idex_reg.rt;
+	int rs = idex_reg.rs;
+	int rd = idex_reg.rd;
+
 	if (idex_reg.RegDst) {
 		exmem_shadow.rd = idex_reg.rd;
 	}
@@ -121,7 +127,7 @@ void EX_op(void){
 		val2 = idex_reg.signextended;
 	}
 
-	ALU_Perform(val1, val2, idex_reg.ALUOp);
+	ALU_Perform(val1, val2, rt, rs, rd, idex_reg.ALUOp);
 
 	return;
 }
@@ -150,15 +156,15 @@ void MEM_op(void){
 	//printf("Address: %u\n", addr);
 
 	if(exmem_reg.MemWrite) {
-		printf("Writing %u to memory[%u]\n",exmem_reg.dataToMem, addr);
-		memory[addr] = exmem_reg.dataToMem;
-		//printf("	MemWrite true -> Write to cache?\n");
-		//Success = writeToCache(addr, (unsigned int)exmem_reg.dataToMem, offset, exmem_reg.dataLen);
+		writeCache(DATA_CACHE, &exmem_reg.dataToMem, addr, word);
+		printf("Writing %u to memory[%u]\n",exmem_reg.dataToMem, addr>>2);
 	}
 
 	//Temporary
 	if(exmem_reg.MemRead) {
-		memwb_shadow.memValue = memory[addr];
+		readCache(DATA_CACHE, &memwb_shadow.memValue, addr, word);
+		printf("Reading in %u from memory[%u]\n",memwb_shadow.memValue, addr>>2);
+		//memwb_shadow.memValue = memory[addr];
 	}
 	//printf("	Address: %u\n", addr);
 	//printf("	Memvalue to write: 0x%x\n", memory[addr]);
@@ -212,7 +218,7 @@ void WB_op(void){
     } else {
     	writeData = memwb_reg.alu_Result;
     }
-    //printf("Write data@wb: %d\n", writeData);
+    printf("Write data@wb: %d\n", writeData);
 
     //printf("RegWrite: %d && reg.id: %d\n",memwb_reg.RegWrite, memwb_reg.rd);
 	if(memwb_reg.RegWrite && (memwb_reg.rd != 0)) {
@@ -231,7 +237,7 @@ void move_shadows_to_reg(void){
 
 	if(lu_hazard){
 		ifid_reg = ifid_reg;
-		PC_zero = PC_zero - 1;
+		PC_zero = PC_zero - 4;
 		insert_bubble();
 		idex_reg = idex_shadow;
 		exmem_reg = exmem_shadow;
@@ -241,6 +247,16 @@ void move_shadows_to_reg(void){
 		lu_hazard = false;
 		return;
 	} 
+
+	if(PC_branch){
+		printf("branch bubble\n");
+		ifid_reg = ifid_reg;
+		PC_zero = PC_zero - 4;
+		insert_bubble();
+		idex_reg = idex_shadow;
+		exmem_reg = exmem_shadow;
+		memwb_reg = memwb_shadow;
+	}
 
 	ifid_reg = ifid_shadow;
 	idex_reg = idex_shadow;
@@ -361,7 +377,6 @@ void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int ext
 		case 0x05|I_BNE:
 			if(regVal1 == regVal2) break;
 			PC_branch = true;
-			printf("ex: %d  npc: %d\n",extendedValue, ifid_reg.nextPC);
 			PC_one = extendedValue+ifid_reg.nextPC;
 			printf("PC_one %d\n",PC_one );
 			break;
@@ -412,7 +427,7 @@ void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int ext
         printf("Contol Msg: bltzal\n");
           // bltzal
           if(regVal1 < 0) {
-            reg_file[31] = (ifid_reg.nextPC+1);
+            reg_file[31] = (ifid_reg.nextPC+4);
             PC_branch = true;
             PC_one = extendedValue+ifid_reg.nextPC;
           }
@@ -421,13 +436,13 @@ void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int ext
           // bgezal
         printf("Contol Msg: bgezal\n");
           if(regVal1 >= 0) {
-            reg_file[31] = (ifid_reg.nextPC+1);
+            reg_file[31] = (ifid_reg.nextPC+4);
             PC_branch = true;
             PC_one = extendedValue+ifid_reg.nextPC;
           }
         break;
         }
-      break;
+    break;
    //  case 0x1f|I_SEB:
    //    idex_shadow.rd = getPartNum(ifid_reg.instruction, PART_RD);
 			// idex_shadow.RegWrite = true;
@@ -444,11 +459,11 @@ void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int ext
 	}
 }
 
-void ALU_Perform(int val1, int val2, alu_op operation) {
+void ALU_Perform(int val1, int val2, int rt, int rs, int rd, alu_op operation) {
 	int result = 0;
 	unsigned int zero = 0;
 	unsigned int shamt;
-	printf("Passing in val1(%d) and val2(%d) to ALU_Perform\n",val1, val2 );
+	printf("ALU ARGUMENTS: val1(%d) | val2(%d) | rt(%d) | rs(%d) | rd(%d) \n",val1, val2, rt, rs, rd );
 	//printf("	ALU OPERATION:\n");
 	shamt = InstructionElement(idex_reg.signextended, SHAMT);
 	if(idex_reg.ALUOp == ALUOP_LWSW) {
@@ -500,6 +515,8 @@ void ALU_Perform(int val1, int val2, alu_op operation) {
 				case R_SUB:
 					result = val1 - val2;
 					break;
+				case R_SUBU:
+					result = val1 - val2;
 				case R_AND:
 					result = val1 & val2;
 					break;
@@ -518,13 +535,14 @@ void ALU_Perform(int val1, int val2, alu_op operation) {
 					else result = 0;
 					break;
 				case R_SLL:
-					result = val1<<shamt;
+					result = val2<<shamt;
+					printf("Result of Shift: (%d)\n", result );
 					break;
 				case R_SRA:
-					result = val1>>shamt;
+					result = val2>>shamt;
 					break;
 				case R_SRL:
-					result = val1>>shamt;
+					result = val2>>shamt;
 					break;
 				case R_NOR:
 					result = ~(val1|val2);

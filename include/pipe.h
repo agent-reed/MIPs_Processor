@@ -20,7 +20,7 @@ void WB_op(void);
 void step(void);
 void move_shadows_to_reg(void);
 
-void ALU_Perform(int src1, int src2, alu_op operation);
+void ALU_Perform(int src1, int src2, int rt, int rs, int rd, alu_op operation);
 void CTL_Perform(unsigned int opCode, int regVal1, int regVal2, unsigned int extendedValue);
 bool forward_handler(int *val1, int *val2);
 bool load_use_handler(void);
