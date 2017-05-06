@@ -14,10 +14,10 @@
 // Cache Configuration
 #define CACHE_ENABLE		1  			// 1 = Caching enabled,  0 = No Caching
 #define UNIFIED_CACHE		0			// 1 = Single cache,   0 = Seperate data & instruction caches
-#define DCACHE_SIZE			64
-#define ICACHE_SIZE			64
-#define BLOCK_SIZE			4			// Size in words (4-bytes)
-#define WRITE_THROUGH		1 			// 1 = Write Through,  0 = Write Back
+#define DCACHE_SIZE			64			// Size in Words
+#define ICACHE_SIZE			64			// Size in Words
+#define BLOCK_SIZE			16			// Size in words (4-bytes)
+#define WRITE_THROUGH		0 			// 1 = Write Through,  0 = Write Back
 
 // Registers
 #define SP					29
@@ -121,8 +121,8 @@ typedef struct {
 } cache;
 
 typedef struct {
-	unsigned int addr;
-	unsigned int data;
+	unsigned int address;
+	unsigned int data[BLOCK_SIZE];
 } write_buffer;
 
 cache_config *ICache_config;
@@ -130,6 +130,8 @@ cache_config *DCache_config;
 
 cache *ICache;
 cache *DCache;
+
+write_buffer *WriteBuffer;
 
 IFID_Register ifid_reg;
 IFID_Register ifid_shadow;

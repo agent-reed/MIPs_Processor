@@ -942,6 +942,11 @@ void initialize_components(void) {
 
 void initialize_caches() {
 	if (CACHE_ENABLE) {
+		if (!WRITE_THROUGH) {
+			
+			WriteBuffer = (write_buffer *)malloc(sizeof(write_buffer));
+			WriteBuffer->address = -1;
+		}
 		if (UNIFIED_CACHE) {
 			DCache = createCache((ICACHE_SIZE+DCACHE_SIZE), (ICACHE_SIZE+DCACHE_SIZE)/(BLOCK_SIZE));
 			DCache_config = createCacheConfig((ICACHE_SIZE+DCACHE_SIZE), (ICACHE_SIZE+DCACHE_SIZE)/(BLOCK_SIZE));
@@ -958,7 +963,7 @@ cache *createCache(int size, int block_num) {
 	cache *cache_out = NULL;
 	unsigned int *data = NULL;
 	
-	cache_out = (cache *)calloc(block_num, sizeof(cache));
+	cache_out = (cache *)malloc(sizeof(cache));
 	if (!cache_out) { 
 		printf("ERROR:   Unable to allocate heap memory!\n");
 	}
